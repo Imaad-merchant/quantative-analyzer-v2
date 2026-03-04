@@ -86,6 +86,7 @@ NY Open Price: ${data.nyOpenPrice?.toFixed(2) ?? "N/A"}`
             <>
               <VolatilityHeatmap
                 hourlyVol={data.hourlyVol}
+                previousHourlyVol={data.previousHourlyVol}
                 timeframe={timeframe}
                 onTimeframeChange={async (tf) => {
                   setTimeframe(tf);
