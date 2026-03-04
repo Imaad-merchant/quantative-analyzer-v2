@@ -154,28 +154,10 @@ export default function VolatilityHeatmap({ hourlyVol, previousHourlyVol, onTime
       <p className="text-xs text-gray-600 mb-4">
         {view === "range" ? `Average High-Low range by hour (${tz} time)` : `Average volume by hour (${tz} time)`}
       </p>
-      <ResponsiveContainer width="100%" height={220}>
-        <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-          <XAxis
-            dataKey="displayHour"
-            tick={{ fill: "#6b7280", fontSize: 10 }}
-            tickLine={false}
-            tickFormatter={v => `${String(v).padStart(2,'0')}h`}
-            interval={0}
-          />
-          <YAxis hide />
-          <Tooltip content={<CustomTooltip tz={tz} />} cursor={{ fill: "#1f2937" }} />
-          <Bar dataKey={dataKey} radius={[3, 3, 0, 0]}>
-            {data.map((entry, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={entry.count > 0 ? (SESSION_COLORS[entry.session] || "#6b7280") : "#1f2937"}
-                opacity={entry.count > 0 ? 0.35 + entry.intensity * 0.65 : 0.2}
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <div className={`flex gap-4 ${previousHourlyVol?.length ? '' : ''}`}>
+        {renderChart(data, "Live")}
+        {previousHourlyVol?.length > 0 && renderChart(prevData, "Previous Session")}
+      </div>
 
       <div className="flex flex-wrap gap-3 mt-3">
         {Object.entries(SESSION_COLORS).map(([session, color]) => (
