@@ -91,21 +91,18 @@ export default function VolatilityHeatmap({ hourlyVol, onTimeframeChange, timefr
               ))}
             </SelectContent>
           </Select>
-          <div className="flex gap-1">
-            {["UTC", "Local"].map(t => (
-              <button
-                key={t}
-                onClick={() => setTz(t)}
-                className={`text-xs px-2.5 py-1 rounded border transition-colors ${
-                  tz === t
-                    ? "bg-blue-600 border-blue-600 text-white font-semibold"
-                    : "border-gray-700 text-gray-400 hover:border-blue-500 hover:text-blue-400"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
+          <Select value={tz} onValueChange={setTz}>
+            <SelectTrigger className="h-7 w-20 bg-gray-800 border-gray-700 text-gray-300 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-800 border-gray-700">
+              {TIMEZONES.map(t => (
+                <SelectItem key={t.label} value={t.label} className="text-gray-300 text-xs focus:bg-gray-700 focus:text-white">
+                  {t.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <div className="flex gap-1">
             {["range", "volume"].map(v => (
               <button
