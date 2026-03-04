@@ -74,6 +74,34 @@ export default function VolatilityHeatmap({ hourlyVol, previousHourlyVol, onTime
 
   const dataKey = view === "range" ? "avg_range" : "avg_volume";
 
+  const renderChart = (volData, label) => (
+    <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 flex-1">
+      <h3 className="text-xs font-semibold text-gray-300 mb-2 uppercase tracking-widest">{label}</h3>
+      <ResponsiveContainer width="100%" height={180}>
+        <BarChart data={volData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+          <XAxis
+            dataKey="displayHour"
+            tick={{ fill: "#6b7280", fontSize: 10 }}
+            tickLine={false}
+            tickFormatter={v => `${String(v).padStart(2,'0')}h`}
+            interval={0}
+          />
+          <YAxis hide />
+          <Tooltip content={<CustomTooltip tz={tz} />} cursor={{ fill: "#1f2937" }} />
+          <Bar dataKey={dataKey} radius={[3, 3, 0, 0]}>
+            {volData.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={entry.count > 0 ? (SESSION_COLORS[entry.session] || "#6b7280") : "#1f2937"}
+                opacity={entry.count > 0 ? 0.35 + entry.intensity * 0.65 : 0.2}
+              />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
       <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
