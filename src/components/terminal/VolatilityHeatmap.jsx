@@ -57,6 +57,9 @@ export default function VolatilityHeatmap({ hourlyVol, onTimeframeChange, timefr
   const tzOffset = TIMEZONES.find(t => t.label === tz)?.offset ?? 0;
   const shiftHour = (h) => ((h + tzOffset + 24) % 24);
 
+  const maxRange = Math.max(...hourlyVol.map(h => h.avg_range));
+  const maxVol = Math.max(...hourlyVol.map(h => h.avg_volume));
+
   // Sort by display hour when local so bars stay in order
   const data = [...hourlyVol]
     .map(h => ({
