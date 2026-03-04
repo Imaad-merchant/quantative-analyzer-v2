@@ -16,68 +16,15 @@ export default function TerminalSettings({ symbol, setSymbol, lookbackDays, setL
       </div>
 
       <div className="space-y-2">
-        <Label className="text-gray-300 text-sm">Ticker Symbol</Label>
-        <Input
-          value={symbol}
-          onChange={e => setSymbol(e.target.value.toUpperCase())}
-          className="bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-yellow-500"
-          placeholder="e.g. NQ=F"
-          onKeyDown={e => e.key === 'Enter' && onRun()}
-        />
-        <div className="flex flex-wrap gap-1 mt-2">
-          {COMMON_TICKERS.map(t => (
-            <button
-              key={t}
-              onClick={() => setSymbol(t)}
-              className={`text-xs px-2 py-0.5 rounded border transition-colors ${
-                symbol === t
-                  ? "bg-yellow-500 text-gray-900 border-yellow-500 font-semibold"
-                  : "border-gray-700 text-gray-400 hover:border-yellow-600 hover:text-yellow-400"
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label className="text-gray-300 text-sm">Timeframe</Label>
-        <div className="flex flex-wrap gap-1">
-          {TIMEFRAMES.map(tf => (
-            <button
-              key={tf}
-              onClick={() => setTimeframe(tf)}
-              className={`text-xs px-2.5 py-1 rounded border transition-colors ${
-                timeframe === tf
-                  ? "bg-yellow-500 text-gray-900 border-yellow-500 font-semibold"
-                  : "border-gray-700 text-gray-400 hover:border-yellow-600 hover:text-yellow-400"
-              }`}
-            >
-              {tf}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex justify-between items-center">
-          <Label className="text-gray-300 text-sm">Analysis Window</Label>
-          <span className="text-yellow-400 font-bold text-sm">{lookbackDays}d</span>
-        </div>
-        <Slider
-          min={7}
-          max={60}
-          step={1}
-          value={[lookbackDays]}
-          onValueChange={([v]) => setLookbackDays(v)}
-          className="[&_.relative]:bg-gray-700 [&_[role=slider]]:bg-yellow-400 [&_[role=slider]]:border-yellow-400"
-        />
-        <div className="flex justify-between text-xs text-gray-600">
-          <span>7d</span>
-          <span>60d</span>
-        </div>
-      </div>
+         <Label className="text-gray-300 text-sm">Ticker Symbol</Label>
+         <Input
+           value={symbol}
+           onChange={e => setSymbol(e.target.value.toUpperCase())}
+           className="bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-yellow-500"
+           placeholder="e.g. NQ=F"
+           onKeyDown={e => e.key === 'Enter' && onRun()}
+         />
+       </div>
 
       <Button
         onClick={onRun}
@@ -92,14 +39,14 @@ export default function TerminalSettings({ symbol, setSymbol, lookbackDays, setL
       </Button>
 
       <div className="border-t border-gray-800 pt-4 space-y-2">
-        <p className="text-xs text-gray-600 uppercase tracking-widest font-bold">Session Reference (UTC)</p>
-        <div className="space-y-1 text-xs text-gray-400">
-          <div className="flex justify-between"><span className="text-indigo-400">Asia</span><span>01:00–05:00</span></div>
-          <div className="flex justify-between"><span className="text-blue-400">London</span><span>07:00–10:00</span></div>
-          <div className="flex justify-between"><span className="text-orange-400">NY AM</span><span>13:30–16:00</span></div>
-          <div className="flex justify-between"><span className="text-green-400">NY PM</span><span>18:30–21:00</span></div>
-        </div>
-      </div>
+         <p className="text-xs text-gray-600 uppercase tracking-widest font-bold">Session Reference (ET)</p>
+         <div className="space-y-1 text-xs text-gray-400">
+           <div className="flex justify-between"><span className="text-indigo-400">Asia</span><span>20:00–00:00</span></div>
+           <div className="flex justify-between"><span className="text-blue-400">London</span><span>02:00–05:00</span></div>
+           <div className="flex justify-between"><span className="text-orange-400">NY AM</span><span>08:30–11:00</span></div>
+           <div className="flex justify-between"><span className="text-green-400">NY PM</span><span>13:30–16:00</span></div>
+         </div>
+       </div>
     </div>
   );
 }
