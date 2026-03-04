@@ -61,7 +61,10 @@ Deno.serve(async (req) => {
     const uniqueDays = [...new Set(rows.map(r => r.dayStart))];
     const lastDay = Math.max(...uniqueDays);
     const currentRows = rows.filter(r => r.dayStart === lastDay);
-    const previousRows = rows.filter(r => r.dayStart < lastDay);
+    const allPreviousRows = rows.filter(r => r.dayStart < lastDay);
+    // For previous session chart, use only the most recent previous day
+    const secondLastDay = allPreviousRows.length > 0 ? Math.max(...allPreviousRows.map(r => r.dayStart)) : null;
+    const previousRows = secondLastDay !== null ? allPreviousRows.filter(r => r.dayStart === secondLastDay) : [];
 
     // Group by timeframe-based buckets instead of hours
     const getTFBucket = (row, tf) => {
