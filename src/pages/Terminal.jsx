@@ -42,8 +42,8 @@ NY Open Price: ${data.nyOpenPrice?.toFixed(2) ?? "N/A"}`
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
       <div className="border-b border-gray-800 bg-gray-900/80 backdrop-blur px-6 py-4 flex items-center gap-3">
-        <Activity className="w-6 h-6 text-yellow-400" />
-        <h1 className="text-xl font-bold tracking-wide text-white">⚡ Alpha Quant Terminal</h1>
+         <Activity className="w-6 h-6 text-yellow-400" />
+         <h1 className="text-xl font-bold tracking-wide text-white">Quantative Analyzer</h1>
         {data && (
           <span className="ml-auto text-sm text-gray-400">
             {data.meta?.longName || symbol} · {data.rows.length} bars
