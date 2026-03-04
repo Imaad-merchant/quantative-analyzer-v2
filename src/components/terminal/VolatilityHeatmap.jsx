@@ -98,7 +98,7 @@ export default function VolatilityHeatmap({ hourlyVol, previousHourlyVol, onTime
             tick={{ fill: "#6b7280", fontSize: 10 }}
             tickLine={false}
             tickFormatter={v => `${String(v).padStart(2,'0')}h`}
-            interval={0}
+            interval={5}
           />
           <YAxis hide />
           <Tooltip content={<CustomTooltip tz={tz} />} cursor={{ fill: "#1f2937" }} />
