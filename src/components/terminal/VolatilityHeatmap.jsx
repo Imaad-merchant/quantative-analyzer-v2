@@ -37,21 +37,30 @@ const CustomTooltip = ({ active, payload }) => {
   );
 };
 
+const LOCAL_OFFSET = -new Date().getTimezoneOffset() / 60; // hours offset from UTC
+
 export default function VolatilityHeatmap({ hourlyVol, onTimeframeChange, timeframe }) {
   const [view, setView] = useState("range"); // "range" | "volume"
+  const [tz, setTz] = useState("UTC"); // "UTC" | "Local"
 
   if (!hourlyVol?.length) return null;
 
   const maxRange = Math.max(...hourlyVol.map(h => h.avg_range));
   const maxVol = Math.max(...hourlyVol.map(h => h.avg_volume));
 
-  const data = hourlyVol.map(h => ({
-    ...h,
-    session: SESSION_LABELS[h.hour] || "",
-    intensity: view === "range"
-      ? (maxRange > 0 ? h.avg_range / maxRange : 0)
-      : (maxVol > 0 ? h.avg_volume / maxVol : 0),
-  }));
+  const shiftHour = (h) => tz === "Local" ? ((h + LOCAL_OFFSET + 24) % 24) : h;
+
+  // Sort by display hour when local so bars stay in order
+  const data = [...hourlyVol]
+    .map(h => ({
+      ...h,
+      displayHour: shiftHour(h.hour),
+      session: SESSION_LABELS[h.hour] || "",
+      intensity: view === "range"
+        ? (maxRange > 0 ? h.avg_range / maxRange : 0)
+        : (maxVol > 0 ? h.avg_volume / maxVol : 0),
+    }))
+    .sort((a, b) => a.displayHour - b.displayHour);
 
   const dataKey = view === "range" ? "avg_range" : "avg_volume";
 
