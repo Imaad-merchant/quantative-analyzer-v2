@@ -1,5 +1,3 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-
 // Map our timeframe labels to Yahoo Finance interval/range combos
 const TF_MAP = {
   '1m':   { interval: '1m',  range: '1d' },
