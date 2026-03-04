@@ -92,8 +92,6 @@ London Session SD Levels:
 
           {data && !loading && (
             <>
-              <SDMetrics sdLevels={data.sdLevels} currentPrice={data.rows[data.rows.length - 1]?.close} />
-              <PriceChart rows={data.rows} sdLevels={data.sdLevels} symbol={symbol} />
               <VolatilityHeatmap hourlyVol={data.hourlyVol} />
               <AIChat context={aiContext} />
             </>
