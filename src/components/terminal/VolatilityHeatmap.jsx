@@ -16,7 +16,7 @@ const SESSION_COLORS = {
   "Asia": "#ef4444",
   "London": "#a855f7",
   "NY AM": "#22c55e",
-  "NY PM": "#0a2818",
+  "NY PM": "#10b981",
   "After": "#6b7280",
 };
 
