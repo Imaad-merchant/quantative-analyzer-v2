@@ -104,7 +104,7 @@ export default function VolatilityHeatmap({ hourlyVol, onTimeframeChange, timefr
         </div>
       </div>
       <p className="text-xs text-gray-600 mb-4">
-        {view === "range" ? "Average High-Low range by hour (UTC)" : "Average volume by hour (UTC)"}
+        {view === "range" ? `Average High-Low range by hour (${tz})` : `Average volume by hour (${tz})`}
       </p>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
