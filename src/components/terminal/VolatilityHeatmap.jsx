@@ -20,19 +20,28 @@ const SESSION_COLORS = {
   "After": "#6b7280",
 };
 
-const CustomTooltip = ({ active, payload, tz }) => {
+const CustomTooltip = ({ active, payload, tz, timeframe }) => {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
-  const session = SESSION_LABELS[d.hour] || "";
-  const displayHour = d.displayHour ?? d.hour;
+  const date = new Date(d.timestamp * 1000);
+  const session = SESSION_LABELS[date.getUTCHours()] || "";
+  
+  const formatTime = () => {
+    const h = date.getUTCHours();
+    const m = String(date.getUTCMinutes()).padStart(2, '0');
+    if (tz === "UTC") return `${String(h).padStart(2, '0')}:${m}`;
+    const tzOffset = TIMEZONES.find(t => t.label === tz)?.offset ?? 0;
+    const localH = (h + tzOffset + 24) % 24;
+    return `${String(localH).padStart(2, '0')}:${m}`;
+  };
+
   return (
     <div className="bg-gray-900 border border-gray-700 rounded-lg p-2 text-xs space-y-1">
-      <p className="text-gray-300">Hour: <span className="text-white font-bold">{String(displayHour).padStart(2,'0')}:00 {tz}</span></p>
-      {tz !== "UTC" && <p className="text-gray-500">UTC: {String(d.hour).padStart(2,'0')}:00</p>}
+      <p className="text-gray-300">Time: <span className="text-white font-bold">{formatTime()} {tz}</span></p>
       <p className="text-gray-300">Session: <span className="font-bold" style={{ color: SESSION_COLORS[session] }}>{session}</span></p>
       <p className="text-gray-300">Avg Range: <span className="text-yellow-400 font-mono font-bold">{d.avg_range.toFixed(4)}</span></p>
       <p className="text-gray-300">Avg Volume: <span className="text-blue-400 font-mono font-bold">{d.avg_volume > 0 ? (d.avg_volume >= 1e6 ? (d.avg_volume/1e6).toFixed(2)+'M' : (d.avg_volume/1e3).toFixed(0)+'K') : '—'}</span></p>
-      {d.count === 0 && <p className="text-gray-500 italic">No data for this hour</p>}
+      {d.count === 0 && <p className="text-gray-500 italic">No data for this period</p>}
     </div>
   );
 };
