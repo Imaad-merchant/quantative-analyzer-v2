@@ -184,3 +184,5 @@ export default function VolatilityHeatmap({ hourlyVol, previousHourlyVol, onTime
     </div>
   );
 }
+
+function renderChart() {}
