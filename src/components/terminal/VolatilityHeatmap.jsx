@@ -48,7 +48,7 @@ const TIMEZONES = [
   { label: "Local", offset: -new Date().getTimezoneOffset() / 60 },
 ];
 
-export default function VolatilityHeatmap({ hourlyVol, onTimeframeChange, timeframe }) {
+export default function VolatilityHeatmap({ hourlyVol, previousHourlyVol, onTimeframeChange, timeframe }) {
   const [view, setView] = useState("range"); // "range" | "volume"
   const [tz, setTz] = useState("UTC");
 
