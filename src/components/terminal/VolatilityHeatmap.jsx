@@ -13,11 +13,12 @@ const SESSION_LABELS = {
 };
 
 const SESSION_COLORS = {
-  "Asia": "#6366f1",
-  "London": "#3b82f6",
+  "Asia": "#ef4444",
+  "London": "#a855f7",
   "Pre-NY": "#a855f7",
   "NY Open": "#f59e0b",
-  "NY": "#22c55e",
+  "NY AM": "#22c55e",
+  "NY PM": "#15803d",
   "NY Close": "#f97316",
   "After": "#6b7280",
 };
