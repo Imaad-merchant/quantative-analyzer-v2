@@ -106,9 +106,8 @@ export default function VolatilityHeatmap({ hourlyVol, previousHourlyVol, onTime
         <BarChart data={volData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <XAxis
             dataKey="displayLabel"
-            tick={{ fill: "#6b7280", fontSize: 10 }}
+            tick={false}
             tickLine={false}
-            interval={Math.max(0, Math.floor(volData.length / 8))}
           />
           <YAxis hide />
           <Tooltip content={<CustomTooltip tz={tz} timeframe={timeframe} />} cursor={{ fill: "#1f2937" }} />
