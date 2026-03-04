@@ -57,25 +57,39 @@ export default function VolatilityHeatmap({ hourlyVol, onTimeframeChange, timefr
 
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-      <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
         <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />
           Hourly Heatmap · All 24 Hours
         </h2>
-        <div className="flex gap-1">
-          {["range", "volume"].map(v => (
-            <button
-              key={v}
-              onClick={() => setView(v)}
-              className={`text-xs px-2.5 py-1 rounded border transition-colors ${
-                view === v
-                  ? "bg-orange-500 border-orange-500 text-gray-900 font-semibold"
-                  : "border-gray-700 text-gray-400 hover:border-orange-500 hover:text-orange-400"
-              }`}
-            >
-              {v === "range" ? "Volatility" : "Volume"}
-            </button>
-          ))}
+        <div className="flex items-center gap-2">
+          <Select value={timeframe} onValueChange={onTimeframeChange}>
+            <SelectTrigger className="h-7 w-20 bg-gray-800 border-gray-700 text-gray-300 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-800 border-gray-700">
+              {TIMEFRAMES.map(tf => (
+                <SelectItem key={tf} value={tf} className="text-gray-300 text-xs focus:bg-gray-700 focus:text-white">
+                  {tf}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="flex gap-1">
+            {["range", "volume"].map(v => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className={`text-xs px-2.5 py-1 rounded border transition-colors ${
+                  view === v
+                    ? "bg-orange-500 border-orange-500 text-gray-900 font-semibold"
+                    : "border-gray-700 text-gray-400 hover:border-orange-500 hover:text-orange-400"
+                }`}
+              >
+                {v === "range" ? "Volatility" : "Volume"}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
       <p className="text-xs text-gray-600 mb-4">
