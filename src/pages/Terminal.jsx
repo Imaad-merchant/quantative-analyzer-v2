@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 export default function Terminal() {
   const [symbol, setSymbol] = useState("NQ=F");
   const [lookbackDays, setLookbackDays] = useState(30);
+  const [timeframe, setTimeframe] = useState("1h");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -21,6 +22,7 @@ export default function Terminal() {
       const res = await base44.functions.invoke("fetchStockData", {
         symbol,
         days: lookbackDays,
+        timeframe,
       });
       setData(res.data);
     } catch (e) {
@@ -28,25 +30,13 @@ export default function Terminal() {
     } finally {
       setLoading(false);
     }
-  }, [symbol, lookbackDays]);
+  }, [symbol, lookbackDays, timeframe]);
 
-  const aiContext = data?.sdLevels
-    ? `Ticker: ${symbol}
-Analysis Window: ${lookbackDays} days
+  const aiContext = data
+    ? `Ticker: ${symbol} · Timeframe: ${timeframe}
+Analysis Window: ${lookbackDays} days · ${data.rows.length} bars
 Current Price: ${data.rows[data.rows.length - 1]?.close?.toFixed(2) ?? "N/A"}
-NY Open Price: ${data.nyOpenPrice?.toFixed(2) ?? "N/A"}
-
-London Session SD Levels:
-  Mean: ${data.sdLevels.mean?.toFixed(2)}
-  StdDev: ${data.sdLevels.std?.toFixed(2)}
-  +1.0 SD: ${data.sdLevels.plus1?.toFixed(2)}
-  +1.5 SD: ${data.sdLevels.plus1_5?.toFixed(2)}
-  +2.0 SD: ${data.sdLevels.plus2?.toFixed(2)}
-  +2.5 SD: ${data.sdLevels.plus2_5?.toFixed(2)}
-  -1.0 SD: ${data.sdLevels.minus1?.toFixed(2)}
-  -1.5 SD: ${data.sdLevels.minus1_5?.toFixed(2)}
-  -2.0 SD: ${data.sdLevels.minus2?.toFixed(2)}
-  -2.5 SD: ${data.sdLevels.minus2_5?.toFixed(2)}`
+NY Open Price: ${data.nyOpenPrice?.toFixed(2) ?? "N/A"}`
     : "";
 
   return (
@@ -69,6 +59,8 @@ London Session SD Levels:
             setSymbol={setSymbol}
             lookbackDays={lookbackDays}
             setLookbackDays={setLookbackDays}
+            timeframe={timeframe}
+            setTimeframe={setTimeframe}
             onRun={fetchData}
             loading={loading}
           />
