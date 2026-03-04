@@ -116,7 +116,7 @@ export default function VolatilityHeatmap({ hourlyVol, onTimeframeChange, timefr
             interval={0}
           />
           <YAxis hide />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: "#1f2937" }} />
+          <Tooltip content={<CustomTooltip tz={tz} />} cursor={{ fill: "#1f2937" }} />
           <Bar dataKey={dataKey} radius={[3, 3, 0, 0]}>
             {data.map((entry, index) => (
               <Cell
