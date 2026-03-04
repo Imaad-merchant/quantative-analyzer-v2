@@ -41,6 +41,25 @@ export default function TerminalSettings({ symbol, setSymbol, lookbackDays, setL
         </div>
       </div>
 
+      <div className="space-y-2">
+        <Label className="text-gray-300 text-sm">Timeframe</Label>
+        <div className="flex flex-wrap gap-1">
+          {TIMEFRAMES.map(tf => (
+            <button
+              key={tf}
+              onClick={() => setTimeframe(tf)}
+              className={`text-xs px-2.5 py-1 rounded border transition-colors ${
+                timeframe === tf
+                  ? "bg-yellow-500 text-gray-900 border-yellow-500 font-semibold"
+                  : "border-gray-700 text-gray-400 hover:border-yellow-600 hover:text-yellow-400"
+              }`}
+            >
+              {tf}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="space-y-3">
         <div className="flex justify-between items-center">
           <Label className="text-gray-300 text-sm">Analysis Window</Label>
