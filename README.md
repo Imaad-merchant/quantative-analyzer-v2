@@ -1,39 +1,14 @@
-**Welcome to your Base44 project** 
+# Market Intelligence & Equity Analytics Tool (V2)
 
-**About**
+## Overview
+A proprietary research engine designed to automate forensic due diligence and volatility modeling. This tool integrates real-time financial APIs with Large Language Models (LLMs) to provide institutional-grade insights into equity markets.
 
-View and Edit  your app on [Base44.com](http://Base44.com) 
+## Key Features
+* **Automated Sentiment Analysis:** Leverages LLMs to process market news and social sentiment for 500+ tickers.
+* **Volatility Modeling:** Real-time calculation of risk metrics and empirical pattern recognition.
+* **Forensic Due Diligence:** Streamlined "top-of-funnel" analysis to identify market inefficiencies.
 
-This project contains everything you need to run your app locally.
-
-**Edit the code in your local development environment**
-
-Any change pushed to the repo will also be reflected in the Base44 Builder.
-
-**Prerequisites:** 
-
-1. Clone the repository using the project's Git URL 
-2. Navigate to the project directory
-3. Install dependencies: `npm install`
-4. Create an `.env.local` file and set the right environment variables
-
-```
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=your_backend_url
-
-e.g.
-VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
-VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
-```
-
-Run the app: `npm run dev`
-
-**Publish your changes**
-
-Open [Base44.com](http://Base44.com) and click on Publish.
-
-**Docs & Support**
-
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
-
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+## Tech Stack
+* **Language:** Python / Vite
+* **Infrastructure:** Base44 Deployment
+* **APIs:** Yahoo Finance, OpenAI/Anthropic
