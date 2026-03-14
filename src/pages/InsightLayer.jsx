@@ -219,31 +219,31 @@ export default function InsightLayer() {
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-400">Total Wins</span>
-                      <span className="text-white font-semibold">{winCount}</span>
+                      <span className="text-white font-semibold">{totalTrades > 0 ? winCount : 'N/A'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Total Win $</span>
-                      <span className="text-green-400 font-semibold">${totalWins.toFixed(2)}</span>
+                      <span className="text-green-400 font-semibold">{totalTrades > 0 ? `$${totalWins.toFixed(2)}` : '$0.00'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Average Win</span>
-                      <span className="text-green-400 font-semibold">${avgWin.toFixed(2)}</span>
+                      <span className="text-green-400 font-semibold">{totalTrades > 0 ? `$${avgWin.toFixed(2)}` : '$0.00'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Average Win Duration</span>
-                      <span className="text-white font-semibold">0</span>
+                      <span className="text-white font-semibold">N/A</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Average Win in a row</span>
-                      <span className="text-white font-semibold">{avgWinStreak}</span>
+                      <span className="text-white font-semibold">N/A</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Max Win in a row</span>
-                      <span className="text-white font-semibold">{maxWinStreak}</span>
+                      <span className="text-white font-semibold">N/A</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Max Win | Equate</span>
-                      <span className="text-white font-semibold">{largestWin.toFixed(2)}</span>
+                      <span className="text-white font-semibold">{totalTrades > 0 ? `$${largestWin.toFixed(2)}` : 'N/A'}</span>
                     </div>
                   </div>
                 </div>
@@ -257,7 +257,7 @@ export default function InsightLayer() {
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-400">Total Losses</span>
-                      <span className="text-white font-semibold">{lossCount}</span>
+                      <span className="text-white font-semibold">{totalTrades > 0 ? lossCount : 'N/A'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Total Loss</span>
@@ -265,23 +265,23 @@ export default function InsightLayer() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Average Loss</span>
-                      <span className="text-red-400 font-semibold">${avgLoss.toFixed(2)}</span>
+                      <span className="text-red-400 font-semibold">{totalTrades > 0 ? `$${avgLoss.toFixed(2)}` : '$0.00'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Avg loss Duration</span>
-                      <span className="text-white font-semibold">0</span>
+                      <span className="text-white font-semibold">N/A</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Avg loss in a row</span>
-                      <span className="text-white font-semibold">{avgLossStreak}</span>
+                      <span className="text-white font-semibold">N/A</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Max loss in a row</span>
-                      <span className="text-white font-semibold">{maxLossStreak}</span>
+                      <span className="text-white font-semibold">N/A</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Max Loss | Streak</span>
-                      <span className="text-white font-semibold">{largestLoss.toFixed(2)}</span>
+                      <span className="text-white font-semibold">{totalTrades > 0 ? `$${largestLoss.toFixed(2)}` : 'N/A'}</span>
                     </div>
                   </div>
                 </div>
