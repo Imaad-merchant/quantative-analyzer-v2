@@ -3,6 +3,7 @@ import { Activity, ArrowLeft, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { base44 } from "@/api/base44Client";
 
 const WS_URL = "wss://elsa-censureless-joyce.ngrok-free.dev";
 const TICK_SIZE = 0.25;
@@ -88,9 +89,14 @@ export default function FootprintChart() {
     try {
       const interval = tf === "1m" ? "1m" : tf === "5m" ? "5m" : "15m";
       const range = tf === "1m" ? "5d" : "30d";
-      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=${interval}&range=${range}&includePrePost=false`;
-      const res = await fetch(url);
-      const json = await res.json();
+      
+      const res = await base44.functions.invoke('fetchYahooHistory', {
+        symbol: sym,
+        interval,
+        range
+      });
+      
+      const json = res.data;
       const result = json?.chart?.result?.[0];
       if (!result) return;
 
