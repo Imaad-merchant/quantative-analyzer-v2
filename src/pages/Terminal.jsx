@@ -7,6 +7,7 @@ import { AlertCircle, Loader2, Activity, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 export default function Terminal() {
   const navigate = useNavigate();
