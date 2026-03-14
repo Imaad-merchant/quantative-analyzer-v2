@@ -47,14 +47,14 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Terminal from './pages/Terminal';
 import FootprintChart from './pages/FootprintChart';
+import Terminal from './pages/Terminal';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Terminal": Terminal,
     "FootprintChart": FootprintChart,
+    "Terminal": Terminal,
 }
 
 export const pagesConfig = {

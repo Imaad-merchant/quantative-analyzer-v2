@@ -30,7 +30,7 @@ export default function FootprintChart() {
     if (!chartRef.current || tvChartRef.current || !window.LightweightCharts) return;
     const chart = window.LightweightCharts.createChart(chartRef.current, {
       width: chartRef.current.clientWidth,
-      height: 260,
+      height: chartRef.current.clientHeight,
       layout: { background: { color: "#0a0a0f" }, textColor: "#888" },
       grid: { vertLines: { color: "#111827" }, horzLines: { color: "#111827" } },
       crosshair: { mode: 1 },
@@ -257,7 +257,7 @@ export default function FootprintChart() {
       </div>
 
       {/* TradingView Candlestick Chart */}
-      <div ref={chartRef} style={{ width: "100%", height: 260, borderBottom: "1px solid #1e1e2e" }} className="rounded" />
+      <div ref={chartRef} style={{ width: "100%", height: "calc(50vh - 50px)", borderBottom: "1px solid #1e1e2e" }} className="rounded" />
 
       {/* Footprint Grid */}
       {buckets.length === 0 ?
@@ -265,7 +265,7 @@ export default function FootprintChart() {
           {loadingHistory ? "Loading historical data..." : "Waiting for data..."}
         </div> :
 
-      <div style={{ overflowX: "auto", overflowY: "auto", maxHeight: "calc(100vh - 400px)", padding: "10px 8px" }}>
+      <div style={{ overflowX: "auto", overflowY: "auto", maxHeight: "calc(50vh - 100px)", padding: "10px 8px" }}>
           <div style={{ display: "flex", alignItems: "flex-start" }}>
 
             {/* Volume Profile */}
