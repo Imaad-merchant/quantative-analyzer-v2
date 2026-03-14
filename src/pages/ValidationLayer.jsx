@@ -14,7 +14,7 @@ export default function ValidationLayer() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-950">
+    <div className="min-h-screen bg-gray-950 pl-16">
       <MainNav />
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="mb-12">

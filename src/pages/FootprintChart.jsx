@@ -207,7 +207,7 @@ export default function FootprintChart() {
   const maxVol = Math.max(...Object.values(volProfile), 1);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0f", color: "#e0e0e0", fontFamily: "monospace" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0f", color: "#e0e0e0", fontFamily: "monospace", paddingLeft: "4rem" }}>
       <MainNav />
 
       {/* Header */}
