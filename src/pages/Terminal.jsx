@@ -3,10 +3,13 @@ import { base44 } from "@/api/base44Client";
 import TerminalSettings from "../components/terminal/TerminalSettings";
 import VolatilityHeatmap from "../components/terminal/VolatilityHeatmap";
 import AIChat from "../components/terminal/AIChat";
-import { AlertCircle, Loader2, Activity } from "lucide-react";
+import { AlertCircle, Loader2, Activity, BarChart3 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Terminal() {
+  const navigate = useNavigate();
   const [symbol, setSymbol] = useState("NQ=F");
   const [lookbackDays, setLookbackDays] = useState(30);
   const [timeframe, setTimeframe] = useState("1h");
@@ -44,6 +47,15 @@ NY Open Price: ${data.nyOpenPrice?.toFixed(2) ?? "N/A"}`
       <div className="border-b border-gray-800 bg-gray-900/80 backdrop-blur px-6 py-4 flex items-center gap-3">
          <Activity className="w-6 h-6 text-yellow-400" />
          <h1 className="text-xl font-bold tracking-wide text-white">Quantative Analyzer</h1>
+         <Button
+           variant="outline"
+           size="sm"
+           onClick={() => navigate(createPageUrl("FootprintChart"))}
+           className="ml-4 gap-2"
+         >
+           <BarChart3 className="w-4 h-4" />
+           Footprint Chart
+         </Button>
         {data && (
           <span className="ml-auto text-sm text-gray-400">
             {data.meta?.longName || symbol} · {data.rows.length} bars
