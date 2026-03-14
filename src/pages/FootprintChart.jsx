@@ -4,285 +4,184 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
+const WS_URL = "wss://elsa-censureless-joyce.ngrok-free.dev";
+const TICK_SIZE = 0.25;
+const MAX_CANDLES = 15;
+
 export default function FootprintChart() {
   const navigate = useNavigate();
-  const [trades, setTrades] = useState([]);
-  const [connectionStatus, setConnectionStatus] = useState("disconnected");
+  const [candles, setCandles] = useState({});
+  const [ohlc, setOhlc] = useState({});
+  const [status, setStatus] = useState("disconnected");
   const wsRef = useRef(null);
 
   useEffect(() => {
-    // Connect to WebSocket
-    const ws = new WebSocket("wss://elsa-censureless-joyce.ngrok-free.dev");
+    const ws = new WebSocket(WS_URL);
     wsRef.current = ws;
-
-    ws.onopen = () => {
-      setConnectionStatus("connected");
-      console.log("WebSocket connected");
+    ws.onopen = () => setStatus("connected");
+    ws.onerror = () => setStatus("error");
+    ws.onclose = () => setStatus("disconnected");
+    ws.onmessage = (e) => {
+      const d = JSON.parse(e.data);
+      if (d.type !== "trade") return;
+      const bucket = new Date(d.timestamp).toISOString().slice(0, 16);
+      const pl = Math.round(d.price / TICK_SIZE) * TICK_SIZE;
+      setCandles(prev => {
+        const c = { ...prev };
+        if (!c[bucket]) c[bucket] = {};
+        if (!c[bucket][pl]) c[bucket][pl] = { b: 0, a: 0 };
+        c[bucket][pl].b += d.bid_volume || 0;
+        c[bucket][pl].a += d.ask_volume || 0;
+        return c;
+      });
+      setOhlc(prev => {
+        const o = { ...prev };
+        if (!o[bucket]) o[bucket] = { o: d.price, h: d.price, l: d.price, c: d.price };
+        o[bucket].h = Math.max(o[bucket].h, d.price);
+        o[bucket].l = Math.min(o[bucket].l, d.price);
+        o[bucket].c = d.price;
+        return o;
+      });
     };
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "trade") {
-        setTrades(prev => [...prev.slice(-499), data]); // Keep last 500 trades
-      }
-    };
-
-    ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
-      setConnectionStatus("error");
-    };
-
-    ws.onclose = () => {
-      setConnectionStatus("disconnected");
-      console.log("WebSocket disconnected");
-    };
-
-    return () => {
-      ws.close();
-    };
+    return () => ws.close();
   }, []);
 
-  // Group trades into candles by time bucket
-  const candleMap = {};
-  const candleOHLC = {}; // Track OHLC for candlestick bars
-  
-  trades.forEach(trade => {
-    const timeBucket = new Date(trade.timestamp).toISOString().slice(0, 16); // 1-minute buckets
-    if (!candleMap[timeBucket]) {
-      candleMap[timeBucket] = { timeBucket, priceLevels: {} };
-      candleOHLC[timeBucket] = { 
-        open: trade.price, 
-        high: trade.price, 
-        low: trade.price, 
-        close: trade.price 
-      };
-    }
-    
-    const priceLevel = Math.round(trade.price * 4) / 4; // Round to 0.25 tick
-    if (!candleMap[timeBucket].priceLevels[priceLevel]) {
-      candleMap[timeBucket].priceLevels[priceLevel] = { bidVolume: 0, askVolume: 0 };
-    }
-    
-    candleMap[timeBucket].priceLevels[priceLevel].bidVolume += trade.bid_volume || 0;
-    candleMap[timeBucket].priceLevels[priceLevel].askVolume += trade.ask_volume || 0;
-    
-    // Update OHLC
-    candleOHLC[timeBucket].high = Math.max(candleOHLC[timeBucket].high, trade.price);
-    candleOHLC[timeBucket].low = Math.min(candleOHLC[timeBucket].low, trade.price);
-    candleOHLC[timeBucket].close = trade.price;
-  });
-
-  const candles = Object.values(candleMap).slice(-20); // Show last 20 candles
-  
-  // Get all unique price levels across all candles
+  const buckets = Object.keys(candles).sort().slice(-MAX_CANDLES);
   const allPrices = new Set();
-  candles.forEach(candle => {
-    Object.keys(candle.priceLevels).forEach(price => allPrices.add(parseFloat(price)));
-  });
-  const sortedPrices = Array.from(allPrices).sort((a, b) => b - a); // Descending
-  
-  const minPrice = Math.min(...sortedPrices);
-  const maxPrice = Math.max(...sortedPrices);
+  buckets.forEach(b => Object.keys(candles[b]).forEach(p => allPrices.add(parseFloat(p))));
+  const prices = Array.from(allPrices).sort((a, b) => b - a);
+  const minP = prices.length ? Math.min(...prices) : 0;
+  const maxP = prices.length ? Math.max(...prices) : 1;
+  const range = maxP - minP || 1;
 
-  // Calculate volume profile (total volume at each price)
-  const volumeProfile = {};
-  candles.forEach(candle => {
-    Object.entries(candle.priceLevels).forEach(([price, vol]) => {
-      if (!volumeProfile[price]) volumeProfile[price] = 0;
-      volumeProfile[price] += vol.bidVolume + vol.askVolume;
+  const volProfile = {};
+  buckets.forEach(b => {
+    Object.entries(candles[b]).forEach(([p, v]) => {
+      volProfile[p] = (volProfile[p] || 0) + v.b + v.a;
     });
   });
-  const maxProfileVolume = Math.max(...Object.values(volumeProfile), 1);
+  const maxVol = Math.max(...Object.values(volProfile), 1);
+
+  const cellH = 20;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      {/* Header */}
-      <div className="border-b border-gray-800 bg-gray-900/80 backdrop-blur px-6 py-4 flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate(createPageUrl("Terminal"))}
-          className="text-gray-400 hover:text-white"
-        >
-          <ArrowLeft className="w-5 h-5" />
+    <div style={{ minHeight: "100vh", background: "#0a0a0f", color: "#e0e0e0", fontFamily: "monospace" }}>
+      <div style={{ borderBottom: "1px solid #1e1e2e", background: "#0f0f1a", padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(createPageUrl("Terminal"))} style={{ color: "#666" }}>
+          <ArrowLeft size={16} />
         </Button>
-        <Activity className="w-6 h-6 text-yellow-400" />
-        <h1 className="text-xl font-bold tracking-wide text-white">Footprint Chart</h1>
-        <div className="ml-auto flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${
-            connectionStatus === "connected" ? "bg-green-500" : 
-            connectionStatus === "error" ? "bg-red-500" : "bg-gray-500"
-          }`} />
-          <span className="text-sm text-gray-400 capitalize">{connectionStatus}</span>
+        <Activity size={18} color="#f59e0b" />
+        <span style={{ fontWeight: 500, fontSize: 15, fontFamily: "sans-serif" }}>NQM5 Footprint</span>
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
+          <div style={{ width: 7, height: 7, borderRadius: "50%", background: status === "connected" ? "#22c55e" : status === "error" ? "#ef4444" : "#555" }} />
+          <span style={{ color: "#888" }}>{status}</span>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="p-6 overflow-auto">
-        {connectionStatus === "disconnected" && (
-          <div className="text-center py-12 text-gray-500">
-            <p className="mb-2">Connecting to wss://elsa-censureless-joyce.ngrok-free.dev...</p>
-            <p className="text-xs">Waiting for WebSocket connection</p>
-          </div>
-        )}
+      {status !== "connected" || buckets.length === 0 ? (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: "#555", fontSize: 13, fontFamily: "sans-serif" }}>
+          {status === "connected" ? "Waiting for data..." : "Connecting to " + WS_URL + "..."}
+        </div>
+      ) : (
+        <div style={{ overflowX: "auto", overflowY: "auto", padding: 16 }}>
+          <div style={{ display: "flex", alignItems: "flex-start" }}>
 
-        {connectionStatus === "error" && (
-          <div className="text-center py-12 text-red-400">
-            <p className="mb-2">Connection failed</p>
-            <p className="text-xs">Unable to connect to WebSocket server</p>
-          </div>
-        )}
-
-        {connectionStatus === "connected" && candles.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
-            <p>Connected. Waiting for trade data...</p>
-          </div>
-        )}
-
-        {connectionStatus === "connected" && candles.length > 0 && (
-          <div className="bg-black p-6">
-            <div className="flex gap-0">
-              {/* Volume Profile */}
-              <div className="flex flex-col-reverse gap-0 pr-3 border-r border-gray-800">
-                {sortedPrices.map(price => {
-                  const vol = volumeProfile[price] || 0;
-                  const width = (vol / maxProfileVolume) * 50;
-                  const isRed = vol > 0 && volumeProfile[price] > maxProfileVolume * 0.5;
-                  return (
-                    <div key={price} className="h-6 flex items-center justify-end">
-                      <div 
-                        className={`h-4 ${isRed ? 'bg-red-600' : 'bg-green-600'}`}
-                        style={{ width: `${width}px` }}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Price Axis */}
-              <div className="flex flex-col-reverse gap-0 pr-3 border-r border-gray-800">
-                {sortedPrices.map(price => (
-                  <div key={price} className="h-6 flex items-center text-[10px] font-mono text-gray-400 px-2">
-                    {price.toFixed(2)}
+            {/* Volume profile */}
+            <div style={{ display: "flex", flexDirection: "column", marginRight: 4 }}>
+              {prices.map(p => {
+                const v = volProfile[p] || 0;
+                const w = Math.round((v / maxVol) * 40);
+                return (
+                  <div key={p} style={{ height: cellH, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
+                    <div style={{ height: 12, width: w, background: "#1d4e89", borderRadius: 1 }} />
                   </div>
-                ))}
-              </div>
-
-              {/* Candle Columns with Candlestick bars on top */}
-              <div className="flex gap-0 overflow-x-auto">
-                {candles.map((candle, candleIdx) => {
-                  const ohlc = candleOHLC[candle.timeBucket];
-                  const isGreen = ohlc.close >= ohlc.open;
-                  
-                  // Calculate cumulative delta and regular delta
-                  const cumulativeDelta = Object.values(candle.priceLevels).reduce(
-                    (sum, vol) => sum + (vol.askVolume - vol.bidVolume), 0
-                  );
-                  const totalVolume = Object.values(candle.priceLevels).reduce(
-                    (sum, vol) => sum + vol.bidVolume + vol.askVolume, 0
-                  );
-
-                  return (
-                    <div key={candleIdx} className="flex flex-col gap-0 border-r border-gray-900">
-                      {/* Candlestick bar overlay */}
-                      <div className="relative h-24 w-16 mb-1 flex items-end justify-center">
-                        <div className="absolute inset-0 flex flex-col justify-between px-7">
-                          {sortedPrices.map(price => (
-                            <div key={price} className="h-px" />
-                          ))}
-                        </div>
-                        
-                        {/* Wick and body */}
-                        <div className="relative w-full h-full flex flex-col items-center justify-end">
-                          <div 
-                            className={`absolute w-0.5 ${isGreen ? 'bg-green-500' : 'bg-red-500'}`}
-                            style={{
-                              bottom: `${((ohlc.low - minPrice) / (maxPrice - minPrice)) * 100}%`,
-                              height: `${((ohlc.high - ohlc.low) / (maxPrice - minPrice)) * 100}%`
-                            }}
-                          />
-                          <div 
-                            className={`absolute w-3 ${isGreen ? 'bg-green-600' : 'bg-red-600'}`}
-                            style={{
-                              bottom: `${((Math.min(ohlc.open, ohlc.close) - minPrice) / (maxPrice - minPrice)) * 100}%`,
-                              height: `${(Math.abs(ohlc.close - ohlc.open) / (maxPrice - minPrice)) * 100}%`
-                            }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Footprint cells */}
-                      <div className="flex flex-col-reverse gap-0">
-                        {sortedPrices.map(price => {
-                          const cell = candle.priceLevels[price] || { bidVolume: 0, askVolume: 0 };
-                          const bid = cell.bidVolume;
-                          const ask = cell.askVolume;
-                          const total = bid + ask;
-                          
-                          const isAskDominant = ask > bid;
-                          const maxVol = Math.max(bid, ask);
-                          const intensity = total > 0 ? Math.min(maxVol / 50, 1) : 0;
-                          
-                          const hasImbalance = (bid > 0 && ask > 0) && (bid / ask >= 3 || ask / bid >= 3);
-                          
-                          const bgColor = total === 0 ? '#0a0a0a' :
-                            isAskDominant 
-                              ? `rgba(22, 163, 74, ${0.15 + intensity * 0.4})` 
-                              : `rgba(220, 38, 38, ${0.15 + intensity * 0.4})`;
-
-                          return (
-                            <div
-                              key={price}
-                              className={`h-6 w-16 flex items-center justify-center text-[9px] font-semibold border border-gray-900 ${
-                                hasImbalance ? 'ring-1 ring-inset ring-black' : ''
-                              }`}
-                              style={{ backgroundColor: bgColor }}
-                            >
-                              {total > 0 && (
-                                <span className={isAskDominant ? 'text-green-300' : 'text-red-300'}>
-                                  {bid} × {ask}
-                                </span>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Delta below candle */}
-                      <div className={`h-7 w-16 flex items-center justify-center text-xs font-bold border-t border-gray-800 ${
-                        cumulativeDelta > 0 ? 'text-blue-400' : cumulativeDelta < 0 ? 'text-pink-400' : 'text-gray-500'
-                      }`}>
-                        {cumulativeDelta !== 0 && (cumulativeDelta > 0 ? '+' : '')}{cumulativeDelta}
-                      </div>
-
-                      {/* Cumulative Delta */}
-                      <div className={`h-7 w-16 flex items-center justify-center text-xs font-bold border-t border-gray-800 ${
-                        cumulativeDelta > 0 ? 'text-green-400 bg-green-950/20' : 'text-red-400 bg-red-950/20'
-                      }`}>
-                        {cumulativeDelta > 0 ? '+' : ''}{cumulativeDelta}
-                      </div>
-
-                      {/* Volume */}
-                      <div className="h-7 w-16 flex items-center justify-center text-[10px] text-gray-500 border-t border-gray-800">
-                        {totalVolume}
-                      </div>
-
-                      {/* Time */}
-                      <div className="h-6 w-16 flex items-center justify-center text-[9px] text-gray-600 border-t border-gray-900">
-                        {new Date(candle.timeBucket).toLocaleTimeString('en-US', { 
-                          hour: '2-digit', 
-                          minute: '2-digit',
-                          hour12: false 
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                );
+              })}
             </div>
+
+            {/* Price axis */}
+            <div style={{ display: "flex", flexDirection: "column", marginRight: 8, minWidth: 60 }}>
+              {prices.map(p => (
+                <div key={p} style={{ height: cellH, display: "flex", alignItems: "center", justifyContent: "flex-end", fontSize: 10, color: "#666", paddingRight: 4 }}>
+                  {p.toFixed(2)}
+                </div>
+              ))}
+            </div>
+
+            {/* Candle columns */}
+            {buckets.map(bucket => {
+              const bar = ohlc[bucket] || {};
+              const isGreen = bar.c >= bar.o;
+              const bodyTop = maxP - Math.max(bar.o, bar.c);
+              const bodyH = Math.abs(bar.c - bar.o);
+              const wickTop = maxP - bar.h;
+              const wickH = bar.h - bar.l;
+              const delta = Object.values(candles[bucket] || {}).reduce((s, v) => s + (v.a - v.b), 0);
+              const totalVol = Object.values(candles[bucket] || {}).reduce((s, v) => s + v.a + v.b, 0);
+
+              return (
+                <div key={bucket} style={{ display: "flex", flexDirection: "column", marginRight: 2 }}>
+
+                  {/* Candlestick */}
+                  <div style={{ position: "relative", width: 56, height: prices.length * cellH * 0.3, marginBottom: 4, minHeight: 60 }}>
+                    <div style={{
+                      position: "absolute", left: "50%", transform: "translateX(-50%)",
+                      top: `${(wickTop / range) * 100}%`,
+                      height: `${(wickH / range) * 100}%`,
+                      width: 1, background: isGreen ? "#22c55e" : "#ef4444", minHeight: 2
+                    }} />
+                    <div style={{
+                      position: "absolute", left: "50%", transform: "translateX(-50%)",
+                      top: `${(bodyTop / range) * 100}%`,
+                      height: `${Math.max((bodyH / range) * 100, 1)}%`,
+                      width: 10, background: isGreen ? "#16a34a" : "#dc2626", borderRadius: 1
+                    }} />
+                  </div>
+
+                  {/* Footprint cells */}
+                  {prices.map(p => {
+                    const cell = (candles[bucket] || {})[p] || { b: 0, a: 0 };
+                    const total = cell.b + cell.a;
+                    const askDom = cell.a >= cell.b;
+                    const imbalance = total > 0 && ((cell.b > 0 ? cell.a / cell.b >= 3 : false) || (cell.a > 0 ? cell.b / cell.a >= 3 : false));
+                    const intensity = total > 0 ? Math.min((Math.max(cell.b, cell.a) / 200), 1) : 0;
+                    const bg = total === 0 ? "#0d0d14" :
+                      askDom ? `rgba(22,163,74,${0.12 + intensity * 0.45})` : `rgba(220,38,38,${0.12 + intensity * 0.45})`;
+
+                    return (
+                      <div key={p} style={{
+                        height: cellH, width: 56,
+                        background: bg,
+                        border: imbalance ? "1px solid #fff" : "1px solid #1a1a2e",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 9, fontWeight: 600,
+                        color: total === 0 ? "transparent" : askDom ? "#86efac" : "#fca5a5"
+                      }}>
+                        {total > 0 ? `${cell.b} × ${cell.a}` : ""}
+                      </div>
+                    );
+                  })}
+
+                  {/* Delta row */}
+                  <div style={{ height: 20, width: 56, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, borderTop: "1px solid #1e1e2e", color: delta >= 0 ? "#60a5fa" : "#f472b6" }}>
+                    {delta > 0 ? "+" : ""}{delta}
+                  </div>
+
+                  {/* Volume row */}
+                  <div style={{ height: 18, width: 56, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#555", borderTop: "1px solid #111" }}>
+                    {totalVol}
+                  </div>
+
+                  {/* Time label */}
+                  <div style={{ height: 18, width: 56, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#444", borderTop: "1px solid #111" }}>
+                    {bucket.slice(11, 16)}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
