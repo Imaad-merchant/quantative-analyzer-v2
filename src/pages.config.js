@@ -49,12 +49,14 @@
  */
 import FootprintChart from './pages/FootprintChart';
 import Terminal from './pages/Terminal';
+import Home from './pages/Home';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "FootprintChart": FootprintChart,
     "Terminal": Terminal,
+    "Home": Home,
 }
 
 export const pagesConfig = {
