@@ -43,31 +43,18 @@ NY Open Price: ${data.nyOpenPrice?.toFixed(2) ?? "N/A"}`
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 pl-16">
       <MainNav />
-      <div className="border-b border-gray-800 bg-gray-900/60 px-6 py-3 flex items-center gap-3">
-        {data && (
-          <span className="text-sm text-gray-400">
-            {data.meta?.longName || symbol} · {data.rows.length} bars
-          </span>
-        )}
-      </div>
+      <TerminalSettings
+        symbol={symbol}
+        setSymbol={setSymbol}
+        lookbackDays={lookbackDays}
+        setLookbackDays={setLookbackDays}
+        timeframe={timeframe}
+        setTimeframe={setTimeframe}
+        onRun={fetchData}
+        loading={loading}
+      />
 
-      <div className="flex h-[calc(100vh-110px)]">
-        {/* Sidebar */}
-        <div className="w-72 border-r border-gray-800 bg-gray-900 p-4 flex-shrink-0 overflow-y-auto">
-          <TerminalSettings
-            symbol={symbol}
-            setSymbol={setSymbol}
-            lookbackDays={lookbackDays}
-            setLookbackDays={setLookbackDays}
-            timeframe={timeframe}
-            setTimeframe={setTimeframe}
-            onRun={fetchData}
-            loading={loading}
-          />
-        </div>
-
-        {/* Main Content */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+      <div className="overflow-y-auto p-5 space-y-5" style={{ height: 'calc(100vh - 64px)' }}>
           {error && (
             <Alert className="border-red-800 bg-red-950 text-red-300">
               <AlertCircle className="w-4 h-4" />
@@ -114,7 +101,6 @@ NY Open Price: ${data.nyOpenPrice?.toFixed(2) ?? "N/A"}`
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 }
