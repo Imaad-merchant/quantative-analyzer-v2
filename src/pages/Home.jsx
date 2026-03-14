@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Activity, TrendingUp, Zap, BarChart3, CheckCircle, ArrowRight } from "lucide-react";
+import MainNav from "../components/navigation/MainNav";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -46,7 +47,8 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
+    <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 pl-16">
+      <MainNav />
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Background Pattern */}
