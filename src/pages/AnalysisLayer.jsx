@@ -1,50 +1,118 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import React, { useState, useCallback } from "react";
+import { base44 } from "@/api/base44Client";
+import TerminalSettings from "../components/terminal/TerminalSettings";
+import VolatilityHeatmap from "../components/terminal/VolatilityHeatmap";
+import AIChat from "../components/terminal/AIChat";
 import MainNav from "../components/navigation/MainNav";
-import { TrendingUp, TestTube, Sigma, Target } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { AlertCircle, Loader2, Activity } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function AnalysisLayer() {
-  const navigate = useNavigate();
+  const [symbol, setSymbol] = useState("NQ=F");
+  const [lookbackDays, setLookbackDays] = useState(30);
+  const [timeframe, setTimeframe] = useState("1h");
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const tools = [
-    { name: "Statistical Tests", icon: TestTube, page: "StatisticalTests", description: "Hypothesis testing and statistical significance" },
-    { name: "Probability Distributions", icon: Sigma, page: "Distributions", description: "Return distributions and risk modeling" },
-    { name: "Regime Detection", icon: TrendingUp, page: "RegimeDetection", description: "Market regime identification and transitions" },
-    { name: "AI Pattern Discovery", icon: Target, page: "AIPatterns", description: "Machine learning pattern recognition" }
-  ];
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    setData(null);
+    try {
+      const res = await base44.functions.invoke("fetchStockData", {
+        symbol,
+        days: lookbackDays,
+        timeframe,
+      });
+      setData(res.data);
+    } catch (e) {
+      setError(e?.response?.data?.error || e.message || "Failed to fetch data");
+    } finally {
+      setLoading(false);
+    }
+  }, [symbol, lookbackDays, timeframe]);
+
+  const aiContext = data
+    ? `Ticker: ${symbol} · Timeframe: ${timeframe}
+Analysis Window: ${lookbackDays} days · ${data.rows.length} bars
+Current Price: ${data.rows[data.rows.length - 1]?.close?.toFixed(2) ?? "N/A"}
+NY Open Price: ${data.nyOpenPrice?.toFixed(2) ?? "N/A"}`
+    : "";
 
   return (
-    <div className="min-h-screen bg-gray-950">
+    <div className="min-h-screen bg-gray-950 text-gray-100">
       <MainNav />
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">Analysis Layer</h1>
-          <p className="text-xl text-gray-400">Statistical analysis, probability modeling, and pattern discovery</p>
+      <div className="border-b border-gray-800 bg-gray-900/60 px-6 py-3 flex items-center gap-3">
+        {data && (
+          <span className="text-sm text-gray-400">
+            {data.meta?.longName || symbol} · {data.rows.length} bars
+          </span>
+        )}
+      </div>
+
+      <div className="flex h-[calc(100vh-110px)]">
+        {/* Sidebar */}
+        <div className="w-72 border-r border-gray-800 bg-gray-900 p-4 flex-shrink-0 overflow-y-auto">
+          <TerminalSettings
+            symbol={symbol}
+            setSymbol={setSymbol}
+            lookbackDays={lookbackDays}
+            setLookbackDays={setLookbackDays}
+            timeframe={timeframe}
+            setTimeframe={setTimeframe}
+            onRun={fetchData}
+            loading={loading}
+          />
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          {tools.map((tool) => {
-            const Icon = tool.icon;
-            return (
-              <div
-                key={tool.page}
-                className="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-purple-500/50 transition-all cursor-pointer group"
-                onClick={() => navigate(createPageUrl(tool.page))}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
-                    <Icon className="w-6 h-6 text-purple-400" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-white mb-2">{tool.name}</h3>
-                    <p className="text-gray-400 text-sm">{tool.description}</p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+          {error && (
+            <Alert className="border-red-800 bg-red-950 text-red-300">
+              <AlertCircle className="w-4 h-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {loading && (
+            <div className="flex items-center justify-center h-64 gap-3 text-gray-400">
+              <Loader2 className="w-6 h-6 animate-spin text-yellow-400" />
+              <span>Fetching market data...</span>
+            </div>
+          )}
+
+          {data && !loading && (
+            <>
+              <VolatilityHeatmap
+                hourlyVol={data.hourlyVol}
+                previousHourlyVol={data.previousHourlyVol}
+                timeframe={timeframe}
+                onTimeframeChange={async (tf) => {
+                  setTimeframe(tf);
+                  setLoading(true);
+                  setError(null);
+                  setData(null);
+                  try {
+                    const res = await base44.functions.invoke("fetchStockData", { symbol, days: lookbackDays, timeframe: tf });
+                    setData(res.data);
+                  } catch (e) {
+                    setError(e?.response?.data?.error || e.message || "Failed to fetch data");
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              />
+              <AIChat context={aiContext} />
+            </>
+          )}
+
+          {!data && !loading && !error && (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-500 gap-2">
+              <Activity className="w-10 h-10 text-gray-700" />
+              <p className="text-sm">Configure settings and click <span className="text-yellow-400 font-semibold">Run Analysis</span></p>
+            </div>
+          )}
         </div>
       </div>
     </div>
